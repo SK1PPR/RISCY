@@ -2,6 +2,7 @@
 
 #define pprint(x) if (pipeline && (debugLevel >= x)) output_file
 #define fprint(x) if (!pipeline && (debugLevel >= x)) output_file
+#define loopReg for(int k=0; k<16; k++)
 
 using namespace std;
 
@@ -83,9 +84,9 @@ void Core::write_context() {
         }
 
         if (gt){
-            context_File<<"Flags.gt : True"<<endl;
+            context_file<<"Flags.gt : True"<<endl;
         } else {
-            concept_file<<"flags.gt : False"<<endl;
+            context_file<<"flags.gt : False"<<endl;
         }
 
         context_file.close();
@@ -93,8 +94,8 @@ void Core::write_context() {
 }
 
 void Core::reset_proc(){
-    for(int i = 0; i < 16; i++){
-        R[i] = 0;
+    loopReg{
+        R[k] = 0;
     }
     R[14] = MEM_CAPACITY; //Stack pointer initialise
     PC.Write(0);
@@ -125,7 +126,7 @@ void Core::run_simplesim(){
 	pprint(1)<<"+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+"<<endl;
 
 	int counter = 0;
-	while ( checkValidPC(PC.Read()) || ( pipeline && ((if_of.bubble.Read() == false) || (of_ex.bubble.Read() == false) || (ex_ma.bubble.Read() == false) || (ma_rw.bubble.Read() == false)) )){
+	while ( checkValidPC(PC.Read()) || ( pipeline && (!if_of.bubble.Read() || !of_ex.bubble.Read() || !ex_ma.bubble.Read() || !ma_rw.bubble.Read()) )){
 		//pprint(2)<<"========================"<<endl;
 		//pprint(2)<<"CYCLE "<<dec<<counter+1<<endl;
 		//pprint(2)<<"========================"<<endl;
@@ -168,7 +169,7 @@ void Core::run_simplesim(){
 			pprint(1)<<" I"<<left<<dec<<setw(6)<<((ma_rw.PC.Read())/4 + 1)<<"|";
 		}
 
-		for (int k = 0; k< 16 ; k++){
+		loopReg{
 			pprint(1)<<right<<hex<<setw(8)<<R[k]<<"|";
 		}
 
@@ -242,7 +243,7 @@ void Core::run_simplesim(){
 	pprint(1)<<"+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+--------+"<<endl;
 	pprint(1)<<"|           Register Values at Termination            |";
 
-	for (int k = 0; k< 16 ; k++){
+	loopReg{
 		pprint(1)<<right<<hex<<setw(8)<<R[k]<<"|";
 	}
 	pprint(1)<<endl;
@@ -386,9 +387,7 @@ void Core::decode() {
 		temp_isImmediate = true;
 		//pprint(2)<<"isImmediate ";
 	}
-	else{
-		temp_isImmediate = false;
-	}
+	else temp_isImmediate = false;
 
 	if( !(opcode5 == 1 || ( opcode5 == 0 && opcode3 == 1 && opcode1 == 1 && ( opcode4 == 1 || opcode2 == 0) ) ) 	|| 	(opcode5 == 1 && opcode4 == 0 && opcode3 == 0 && opcode2 == 1 && opcode1 == 1)  ){
 		temp_isWb = true;
@@ -402,9 +401,7 @@ void Core::decode() {
 		temp_isUbranch = true;
 		//pprint(2)<<"isUbranch ";
 	}
-	else{
-		temp_isUbranch = false;
-	}
+	else temp_isUbranch = false;
 
 	if(opcode5 == 1 && opcode4 == 0 && opcode3 == 0 && opcode2 == 1 && opcode1 == 1){
 		temp_isCall = true;
@@ -1489,6 +1486,7 @@ string Core::registerstring(unsigned int a){
 	return ss.str();
 }
 
+
 string Core::sintstring(unsigned int a, int size){
 	a = (a<<(32-size))>>(32-size);
 
@@ -1506,9 +1504,9 @@ string Core::sintstring(unsigned int a, int size){
 	ss<<dec<<ans;
 	return ss.str();
 
-
 }
 
+//Returns number in the form of hexadecimal string
 string Core::hexstring(unsigned int a){
 	stringstream ss;
 	ss<<"0x"<<hex<<a;

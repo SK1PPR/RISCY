@@ -12,45 +12,59 @@
 #include "../include/PipelineRegister.h"
 
 class Core{
-    public:
-        Core();
+public:
+    Core();
 
-            void reset_proc();
-            void load_program_memory();
-            void write_memory();
-            void write_context();
-            void run_simplesim();
+    void reset_proc();
+    void load_program_memory();
+    void write_memory();
+    void write_context();
+    void run_simplesim();
         
-            //read from instruction memory
-            void fetch_begin();
-            //update the instruction register
-            void fetch_end();
-            //reads the instrution register, reads operand1, operand2 from register file, decides the operation to be performed in the execute stage
-            void decode();
-            //executes the ALU operation based on ALUop
-            void execute();
-            //perform the memory operation
-            void mem_access();
-            //writes the resuts nacl to register file
-            void write_back();
+    //Read from instruction memory
+    void fetch_begin();
+    //Update the instruction register
+    void fetch_end();
+    //Reads the instrution register, reads operand1, operand2 from register file, decides the operation to be performed in the execute stage
+    void decode();
+    //Executes the ALU operation based on ALUop
+    void execute();
+    //Performs the memory operation
+    void mem_access();
+    //Writes the results back to register file
+    void write_back();
 
-    protected:
+private:
+    Memory MEM;
+    std::ifstream input_file;
+    std::ofstream output_file;
 
-    private:
-        bool checkValidPC(unsigned int testPC);
-        unsigned int inst_biset(unsigned int inst_word, unsigned int start, unsigned int end);
-        bool check_data_conflict(PipelineRegister& A, PipelineRegister& B);
+    PipelineRegister if_of;
+    PipelineRegister of_ex;
+    PipelineRegister ex_ma;
+    PipelineRegister ma_rw;
 
-        bool detect_data_dependency();
-        bool detect_control_dependecy();
+    Register<unsigned int> PC;
+    unsigned int R[16];
+    bool eq,gt;
+    bool isBranchTaken;
+    unsigned int branchPC;
 
-        //Disassemble encoded instructio to instruction string
-        std::string disassemble (unsigned int inst_word);
-        //Convert register Number from int to string
-        std::string registerstring(unsigned int a);
-        //Convert integer to signed string based on bit size
-        std::string sintstring (unsigned int a, int size);
-        //Convert integet to hexstring
-        std::string hexstring (unsigned int a);
+
+    bool checkValidPC(unsigned int testPC);
+    unsigned int inst_bitset(unsigned int inst_word, unsigned int start, unsigned int end);
+    bool check_data_conflict(PipelineRegister& A, PipelineRegister& B);
+
+    bool detect_data_dependency();
+    bool detect_control_dependency();
+
+    //Disassemble encoded instructions to instruction string
+    std::string disassemble (unsigned int inst_word);
+    //Convert register Number from int to string
+    std::string registerstring(unsigned int a);
+    //Convert integer to signed string based on bit size
+    static std::string sintstring (unsigned int a, int size);
+    //Convert integet to hexstring
+    static std::string hexstring (unsigned int a);
         
 };

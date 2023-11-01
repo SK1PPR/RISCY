@@ -3,7 +3,7 @@
 #include "Register.h"
 
 class PipelineRegister{
-    public:
+public:
 	Register<bool> bubble;
     
 	Register<unsigned int> PC;
@@ -37,8 +37,9 @@ class PipelineRegister{
 	Register<bool> isAnd;
 	Register<bool> isNot;
 	Register<bool> isMov;
-public:
-	PipelineRegister(bool pipe);
+
+    //Methods
+	explicit PipelineRegister(bool pipe);
 	void clock();
 	void WriteBubble(bool to_bubble);
 	void ForwardBubble(bool to_bubble);
